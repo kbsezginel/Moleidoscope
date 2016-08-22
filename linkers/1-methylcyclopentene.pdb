@@ -1,0 +1,18 @@
+HEADER    1-methylcyclopentene
+HETATM    1  C  MOL     1        0.844   1.182  -0.513  1.00  0.00           C
+HETATM    2  C  MOL     1        2.060   0.776  -0.912  1.00  0.00           C
+HETATM    3  C  MOL     1        2.252  -0.716  -0.705  1.00  0.00           C
+HETATM    4  C  MOL     1        0.786  -1.198  -0.574  1.00  0.00           C
+HETATM    5  C  MOL     1        0.027   0.018   0.040  1.00  0.00           C
+HETATM    6  C  MOL     1        0.313   2.600  -0.494  1.00  0.00           C
+HETATM    7  H  MOL     1        2.858   1.434  -1.295  1.00  0.00           H
+HETATM    8  H  MOL     1        2.763  -1.195  -1.571  1.00  0.00           H
+HETATM    9  H  MOL     1        2.842  -0.908   0.220  1.00  0.00           H
+HETATM   10  H  MOL     1       -1.015   0.056  -0.355  1.00  0.00           H
+HETATM   11  H  MOL     1        0.125   2.945   0.546  1.00  0.00           H
+HETATM   12  H  MOL     1       -0.644   2.673  -1.056  1.00  0.00           H
+HETATM   13  H  MOL     1        1.031   3.312  -0.959  1.00  0.00           H
+HETATM   14  H  MOL     1        0.389  -1.345  -1.608  1.00  0.00           H
+HETATM   15  O  MOL     1        0.689  -2.065  -0.085  1.00  0.00           O
+HETATM   16  O  MOL     1        0.015   0.039   1.040  1.00  0.00           O
+END
