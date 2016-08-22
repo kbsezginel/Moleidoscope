@@ -170,6 +170,7 @@ class Mirror:
             p1 = np.array([0, 0, 0])
             p2 = np.array([0, 0, 1])
             p3 = np.array([0, 1, 0])
+        # Source: http://kitchingroup.cheme.cmu.edu/blog/2015/01/18/Equation-of-a-plane-through-three-points/
         # These two vectors are in the plane
         v1 = p3 - p1
         v2 = p2 - p1
@@ -178,8 +179,12 @@ class Mirror:
         self.a, self.b, self.c = cp
         # This evaluates a * x3 + b * y3 + c * z3 which equals d
         self.d = np.dot(cp, p3)
+        self.p1 = p1
+        self.p2 = p2
+        self.p3 = p3
 
     def symmetry(self, coor):
+        """ Get symmetrical points through the mirror. """
         s0 = (self.a * coor.x + self.b * coor.y + self.c * coor.z + self.d)
         s0 /= (self.a**2 + self.b**2 + self.c**2)
 
@@ -188,3 +193,10 @@ class Mirror:
         z = coor.z - 2 * s0 * self.c
 
         return Coor([x, y, z])
+
+    def coordinates(self, length, grid_size=20):
+        """ Get meshgrid coordinates for the mirror plane. """
+        nx, ny = (grid_size, grid_size)
+        x = np.linspace(0, length, nx)
+        y = np.linspace(0, length, ny)
+        xv, yv = np.meshgrid(x, y)

@@ -4,8 +4,8 @@
 import os
 import math
 import nglview
-from moleidoscope.geometry import Coor
-from moleidoscope.geometry import Quaternion
+from moleidoscope.geo.coor import Coor, Mirror
+from moleidoscope.geo.quaternion import Quaternion
 
 
 main_dir = os.getcwd()
@@ -88,22 +88,20 @@ class Linker:
         linker_info['name'] = library['linker_names'][linker_index]
         return linker_info
 
-    def mirror(self, mirror_info):
-        if mirror_info == [1, 1, 1]:
-            mirror_operator = [-1, -1, -1]
-        else:
-            mirror_operator = [1, 1, 1]
-            for axis_index, axis in enumerate(mirror_info):
-                if axis == 0:
-                    mirror_operator[axis_index] = -1
+    def mirror(self, mirror_plane):
+        if isinstance(mirror_plane, list) and len(mirror_plane) == 3:
+            p1, p2, p3 = mirror_plane
+            m = Mirror(p1, p2, p3)
+        elif isinstance(mirror_plane, str):
+            m = Mirror(mirror_plane)
+
         mirror_coordinates = []
         mirror_names = []
         for coor, name in zip(self.atom_coors, self.atom_names):
-            mirror_coor = []
-            for axis_index, mirror_axis in enumerate(mirror_operator):
-                mirror_coor.append(coor[axis_index] * mirror_axis)
-            mirror_names.append(name)
+            c = Coor(coor)
+            mirror_coor = m.symmetry(c).xyz()
             mirror_coordinates.append(mirror_coor)
+            mirror_names.append(name)
 
         mirror_linker = Linker()
         mirror_linker.name = self.name + '_M'
