@@ -80,6 +80,17 @@ class Linker:
     def __repr__(self):
         return "<Linker object %s with:%s atoms>" % (self.name, len(self.atom_coors))
 
+    def copy(self):
+        copy_linker = Linker()
+        copy_linker.atom_coors = []
+        copy_linker.atom_names = []
+        for name, coor in zip(self.atom_names, self.atom_coors):
+            copy_linker.atom_names.append(name)
+            copy_linker.atom_coors.append(coor)
+        copy_linker.num_of_atoms = len(copy_linker.atom_names)
+        copy_linker.name = self.name
+        return copy_linker
+
     def read_linker(self, linker_index):
         linker_info = {'atom_names': [], 'atom_coors': [], 'num_of_atoms': 0, 'connectivity': []}
         linker_info['num_of_atoms'] = library['number_of_atoms'][linker_index]
@@ -88,7 +99,7 @@ class Linker:
         linker_info['name'] = library['linker_names'][linker_index]
         return linker_info
 
-    def mirror(self, mirror_plane):
+    def reflect(self, mirror_plane):
         if isinstance(mirror_plane, list) and len(mirror_plane) == 3:
             p1, p2, p3 = mirror_plane
             m = Mirror(p1, p2, p3)
@@ -125,21 +136,26 @@ class Linker:
             x, y, z = Q.rotation(coor, rotation_info[2], rotation_info[1], rotation_info[0]).xyz()
             rotated_coors.append([x, y, z])
 
-        rotated_linker = Linker()
+        rotated_linker = self.copy()
         rotated_linker.name = self.name + '_R' + str(round(math.degrees(rotation_info[0])))
-        rotated_linker.atom_names = self.atom_names
         rotated_linker.atom_coors = rotated_coors
         return rotated_linker
 
-    def join(self, other_linker):
-        joined_linker = Linker()
-        joined_linker.atom_coors = self.atom_coors + other_linker.atom_coors
-        joined_linker.atom_names = self.atom_names + other_linker.atom_names
-        joined_linker.num_of_atoms = len(self.atom_names) + len(other_linker.atom_names)
-        if self.name == other_linker.name:
-            joined_linker.name = self.name + 'JOINED'
-        else:
-            joined_linker.name = self.name + '_' + other_linker.name
+    def rotoreflect(self, rotation_info, mirror_plane):
+        rotated_linker = self.rotate(rotation_info)
+        reflected_linker = rotated_linker.reflect(mirror_plane)
+        return reflected_linker
+
+    def join(self, *args):
+        joined_linker = self.copy()
+        for other_linker in args:
+            joined_linker.atom_coors += other_linker.atom_coors
+            joined_linker.atom_names += other_linker.atom_names
+            joined_linker.num_of_atoms += len(other_linker.atom_names)
+            if joined_linker.name == other_linker.name:
+                joined_linker.name += 'JOINED'
+            else:
+                joined_linker.name += '_' + other_linker.name
         return joined_linker
 
     def view(self):
