@@ -4,8 +4,9 @@
 import os
 import math
 import nglview
-from moleidoscope.geo.coor import Coor, Mirror
+from moleidoscope.geo.coor import Coor
 from moleidoscope.geo.quaternion import Quaternion
+from moleidoscope.mirror import Mirror
 
 
 main_dir = os.getcwd()
@@ -105,12 +106,13 @@ class Linker:
             m = Mirror(p1, p2, p3)
         elif isinstance(mirror_plane, str):
             m = Mirror(mirror_plane)
+        else:
+            m = mirror_plane
 
         mirror_coordinates = []
         mirror_names = []
         for coor, name in zip(self.atom_coors, self.atom_names):
-            c = Coor(coor)
-            mirror_coor = m.symmetry(c).xyz()
+            mirror_coor = m.symmetry(coor)
             mirror_coordinates.append(mirror_coor)
             mirror_names.append(name)
 
