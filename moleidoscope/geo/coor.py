@@ -155,23 +155,25 @@ class Mirror:
     """ Mirror class."""
     def __init__(self, *args, size=10):
         if len([*args]) == 3:
-            p1 = np.array(p1)
-            p2 = np.array(p2)
-            p3 = np.array(p3)
+            p1 = np.array(args[0])
+            p2 = np.array(args[1])
+            p3 = np.array(args[2])
+            self.name = 'p1: ' + str(p1) + ' p2: ' + str(p2) + ' p3: ' + str(p3)
         elif str(*args) == 'xy':
             p1 = np.array([0, 0, 0])
             p2 = np.array([size, 0, 0])
             p3 = np.array([size, size, 0])
+            self.name = str(*args)
         elif str(*args) == 'xz':
             p1 = np.array([0, 0, 0])
             p2 = np.array([size, 0, 0])
             p3 = np.array([size, 0, size])
+            self.name = str(*args)
         elif str(*args) == 'yz':
             p1 = np.array([0, 0, 0])
             p2 = np.array([0, 0, size])
             p3 = np.array([0, size, size])
-        # This can fail for non-string inputs
-        self.name = str(*args)
+            self.name = str(*args)
         # Source: http://kitchingroup.cheme.cmu.edu/blog/2015/01/18/Equation-of-a-plane-through-three-points/
         # These two vectors are in the plane
         v1 = p3 - p1
