@@ -148,6 +148,25 @@ class Linker:
         reflected_linker = rotated_linker.reflect(mirror_plane)
         return reflected_linker
 
+    def find_center(self):
+        xsum = 0
+        ysum = 0
+        zsum = 0
+        for coor in self.atom_coors:
+            xsum += coor[0]
+            ysum += coor[1]
+            zsum += coor[2]
+        num_of_atoms = len(self.atom_coors)
+        return [xsum / num_of_atoms, ysum / num_of_atoms, zsum / num_of_atoms]
+
+    def center(self, coor=[0, 0, 0]):
+        center_coor = self.find_center()
+        center_vector = [i - j for i, j in zip(coor, center_coor)]
+        new_coors = []
+        for atom in self.atom_coors:
+            new_coors.append([i + j for i, j in zip(atom, center_vector)])
+        self.atom_coors = new_coors
+
     def join(self, *args):
         joined_linker = self.copy()
         for other_linker in args:
