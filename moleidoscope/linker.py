@@ -100,7 +100,7 @@ class Linker:
         linker_info['name'] = library['linker_names'][linker_index]
         return linker_info
 
-    def reflect(self, mirror_plane):
+    def reflect(self, mirror_plane, translate=True, amount=5):
         if isinstance(mirror_plane, list) and len(mirror_plane) == 3:
             p1, p2, p3 = mirror_plane
             m = Mirror(p1, p2, p3)
@@ -120,6 +120,13 @@ class Linker:
         mirror_linker.name = self.name + '_M'
         mirror_linker.atom_coors = mirror_coordinates
         mirror_linker.atom_names = mirror_names
+
+        if translate:
+            normal_vector = [m.a, m.b, m.c]
+            translation_vector = [i * amount for i in normal_vector]
+            # translation_vector = [(i * amount for i, j in zip(self.atom_coors[0], mirror_coordinates[0])]
+            mirror_linker.translate(translation_vector)
+
         return mirror_linker
 
     def translate(self, translation_info):
