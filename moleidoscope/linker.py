@@ -77,6 +77,10 @@ class Linker:
             self.atom_coors = linker_info['atom_coors']
             self.num_of_atoms = linker_info['num_of_atoms']
             self.connectivity = linker_info['connectivity']
+        else:
+            self.name = ''
+            self.atom_names = []
+            self.atom_coors = []
 
     def __repr__(self):
         return "<Linker object %s with:%s atoms>" % (self.name, len(self.atom_coors))
@@ -209,3 +213,25 @@ def write_pdb(pdb_path, names, coors):
             pdb_file.write(format % (atom_index, atom_name, x, y, z, atom_name.rjust(2)))
             atom_index += 1
         pdb_file.write('END\n')
+
+
+    def join(self, *args):
+        joined_linker = self.copy()
+        for other_linker in args:
+            joined_linker.atom_coors += other_linker.atom_coors
+            joined_linker.atom_names += other_linker.atom_names
+            joined_linker.num_of_atoms += len(other_linker.atom_names)
+            if joined_linker.name == other_linker.name:
+                joined_linker.name += 'JOINED'
+            else:
+                joined_linker.name += '_' + other_linker.name
+        return joined_linker
+
+
+def view_linkers(*args):
+    l = Linker()
+    for linker in args:
+        l = l.join(linker)
+    l.name = 'view'
+    linker_path = l.export()
+    return nglview.show_structure_file(linker_path)

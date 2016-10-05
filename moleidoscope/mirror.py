@@ -1,4 +1,5 @@
 import numpy as np
+from moleidoscope.geo.quaternion import Quaternion
 
 
 class Mirror:
@@ -33,7 +34,8 @@ class Mirror:
         self.a, self.b, self.c = cp
         # This evaluates a * x3 + b * y3 + c * z3 which equals d
         self.d = np.dot(cp, p3)
-        self.p1, self.p2, self.p3 = p1 * size, p2 * size, p3 * size
+        self.p1, self.p2, self.p3 = p1, p2, p3
+        self.sp1, self.sp2, self.sp3 = p1 * size, p2 * size, p3 * size
 
     def symmetry(self, coor):
         """ Get symmetrical points through the mirror. """
@@ -45,6 +47,18 @@ class Mirror:
         z = coor[2] - 2 * s0 * self.c
 
         return [x, y, z]
+
+    def rotate(self, axis, angle, size=10):
+        """ Rotate mirror around an axis.
+            - axis -> ex: [[1, 0, 0], [0, 0, 0]]
+            - angle -> ex: math/pi / 2 (must be in radians)
+        """
+        q = Quaternion([0, 1, 1, 1])
+        p1r = q.rotation(self.p1, axis[0], axis[1], angle).xyz()
+        p2r = q.rotation(self.p2, axis[0], axis[1], angle).xyz()
+        p3r = q.rotation(self.p3, axis[0], axis[1], angle).xyz()
+        new_mirror = Mirror(p1r, p2r, p3r, size=size)
+        return new_mirror
 
     def coordinates(self, length, grid_size=20):
         """ Get meshgrid coordinates for the mirror plane. """
@@ -61,7 +75,7 @@ class Mirror:
             P1 /___/____/
                   Pm
         """
-        p1, p2, p3 = self.p1, self.p2, self.p3
+        p1, p2, p3 = self.sp1, self.sp2, self.sp3
         grid_plane_coors = []
 
         for m in range(grid_size):
@@ -73,15 +87,17 @@ class Mirror:
 
         return grid_plane_coors
 
-    def to_linker(self, l_axis, grid_size=10, atom_type='N'):
+    def to_linker(self, grid_size=10, atom_type='N'):
         mirror_coors = self.grid_plane(grid_size)
         mirror_names = [atom_type] * len(mirror_coors)
-        l_axis.name = self.name
-        l_axis.atom_coors = mirror_coors
-        l_axis.atom_names = mirror_names
-        return l_axis
+        from moleidoscope.linker import Linker
+        l_mirror = Linker()
+        l_mirror.name = self.name
+        l_mirror.atom_coors = mirror_coors
+        l_mirror.atom_names = mirror_names
+        return l_mirror
 
     def scale(self, size=5):
-        self.p1 *= size
-        self.p2 *= size
-        self.p3 *= size
+        self.sp1 *= size
+        self.sp2 *= size
+        self.sp3 *= size
