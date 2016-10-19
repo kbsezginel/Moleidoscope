@@ -104,7 +104,12 @@ class Linker:
         linker_info['name'] = library['linker_names'][linker_index]
         return linker_info
 
-    def reflect(self, mirror_plane, translate=True, amount=5):
+    def reflect(self, mirror_plane, translate=True, amount=0):
+        """ Reflect the linker off a plane.
+            - translate: Translate the linker after reflection
+            - amount: Translation amount
+              (default is 0 which means no additional translation after reflection)
+        """
         if isinstance(mirror_plane, list) and len(mirror_plane) == 3:
             p1, p2, p3 = mirror_plane
             m = Mirror(p1, p2, p3)

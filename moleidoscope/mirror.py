@@ -9,6 +9,7 @@ class Mirror:
             p1 = np.array(args[0])
             p2 = np.array(args[1])
             p3 = np.array(args[2])
+            p1, p2, p3 = p1 * size, p2 * size, p3 * size    # Change the size of the mirror plane
             self.name = 'p1: ' + str(p1) + ' p2: ' + str(p2) + ' p3: ' + str(p3)
         elif str(*args) == 'xy':
             p1 = np.array([0, 0, 0])
@@ -35,11 +36,10 @@ class Mirror:
         # This evaluates a * x3 + b * y3 + c * z3 which equals d
         self.d = np.dot(cp, p3)
         self.p1, self.p2, self.p3 = p1, p2, p3
-        self.sp1, self.sp2, self.sp3 = p1 * size, p2 * size, p3 * size
 
     def symmetry(self, coor):
         """ Get symmetrical points through the mirror. """
-        s0 = (self.a * coor[0] + self.b * coor[1] + self.c * coor[2] + self.d)
+        s0 = (self.a * coor[0] + self.b * coor[1] + self.c * coor[2] - self.d)
         s0 /= (self.a**2 + self.b**2 + self.c**2)
 
         x = coor[0] - 2 * s0 * self.a
@@ -48,10 +48,11 @@ class Mirror:
 
         return [x, y, z]
 
-    def rotate(self, axis, angle, size=10):
+    def rotate(self, axis, angle, size=1):
         """ Rotate mirror around an axis.
             - axis -> ex: [[1, 0, 0], [0, 0, 0]]
             - angle -> ex: math/pi / 2 (must be in radians)
+            - size -> default is 1 which means same size as before
         """
         q = Quaternion([0, 1, 1, 1])
         p1r = q.rotation(self.p1, axis[0], axis[1], angle).xyz()
@@ -75,7 +76,7 @@ class Mirror:
             P1 /___/____/
                   Pm
         """
-        p1, p2, p3 = self.sp1, self.sp2, self.sp3
+        p1, p2, p3 = self.p1, self.p2, self.p3
         grid_plane_coors = []
 
         for m in range(grid_size):
@@ -88,6 +89,7 @@ class Mirror:
         return grid_plane_coors
 
     def to_linker(self, grid_size=10, atom_type='N'):
+        """ Convert mirror class to linker """
         mirror_coors = self.grid_plane(grid_size)
         mirror_names = [atom_type] * len(mirror_coors)
         from moleidoscope.linker import Linker
@@ -98,6 +100,6 @@ class Mirror:
         return l_mirror
 
     def scale(self, size=5):
-        self.sp1 *= size
-        self.sp2 *= size
-        self.sp3 *= size
+        self.p1 *= size
+        self.p2 *= size
+        self.p3 *= size
