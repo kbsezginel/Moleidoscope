@@ -4,6 +4,7 @@
 import os
 import math
 import nglview
+import numpy as np
 from moleidoscope.geo.coor import Coor
 from moleidoscope.geo.quaternion import Quaternion
 from moleidoscope.mirror import Mirror
@@ -104,7 +105,7 @@ class Linker:
         linker_info['name'] = library['linker_names'][linker_index]
         return linker_info
 
-    def reflect(self, mirror_plane, translate=True, amount=0):
+    def reflect(self, mirror_plane, translate=None):
         """ Reflect the linker off a plane.
             - translate: Translate the linker after reflection
             - amount: Translation amount
@@ -130,9 +131,9 @@ class Linker:
         mirror_linker.atom_coors = mirror_coordinates
         mirror_linker.atom_names = mirror_names
 
-        if translate:
+        if translate is not None:
             normal_vector = [m.a, m.b, m.c]
-            translation_vector = [i * amount for i in normal_vector]
+            translation_vector = [i * translate for i in normal_vector]
             # translation_vector = [(i * amount for i, j in zip(self.atom_coors[0], mirror_coordinates[0])]
             mirror_linker.translate(translation_vector)
 
@@ -164,7 +165,7 @@ class Linker:
         reflected_linker = rotated_linker.reflect(mirror_plane)
         return reflected_linker
 
-    def find_center(self):
+    def get_center(self):
         xsum = 0
         ysum = 0
         zsum = 0
@@ -175,13 +176,22 @@ class Linker:
         num_of_atoms = len(self.atom_coors)
         return [xsum / num_of_atoms, ysum / num_of_atoms, zsum / num_of_atoms]
 
-    def center(self, coor=[0, 0, 0]):
-        center_coor = self.find_center()
-        center_vector = [i - j for i, j in zip(coor, center_coor)]
-        new_coors = []
-        for atom in self.atom_coors:
-            new_coors.append([i + j for i, j in zip(atom, center_vector)])
-        self.atom_coors = new_coors
+    def center(self, coor=[0, 0, 0], mirror=None):
+        if mirror is not None:
+            # Currently not working!!!
+            linker_center = np.array(self.get_center())
+            mirror_center = np.array(mirror.get_center())
+            mirror_vector = np.array([mirror.a, mirror.b, mirror.c])
+            translation = mirror_center - linker_center
+            self.translate(translation)
+
+        else:
+            center_coor = self.get_center()
+            center_vector = [i - j for i, j in zip(coor, center_coor)]
+            new_coors = []
+            for atom in self.atom_coors:
+                new_coors.append([i + j for i, j in zip(atom, center_vector)])
+                self.atom_coors = new_coors
 
     def join(self, *args):
         joined_linker = self.copy()

@@ -28,10 +28,10 @@ class Mirror:
             self.name = str(*args)
         # Source: http://kitchingroup.cheme.cmu.edu/blog/2015/01/18/Equation-of-a-plane-through-three-points/
         # These two vectors are in the plane
-        v1 = p3 - p1
-        v2 = p2 - p1
+        self.v1 = p3 - p1
+        self.v2 = p2 - p1
         # the cross product is a vector normal to the plane
-        cp = np.cross(v1, v2)
+        cp = np.cross(self.v1, self.v2)
         self.a, self.b, self.c = cp
         # This evaluates a * x3 + b * y3 + c * z3 which equals d
         self.d = np.dot(cp, p3)
@@ -70,6 +70,7 @@ class Mirror:
 
     def grid_plane(self, grid_size):
         """ Three points P1(x1, y1, z1), P2(x2, y2, z2), P3(x3, y3, z3)
+            Make sure this is the same with the plane defined using 3 points!!!
                   ________
               P2 /   /    / P3
              Pn /---/----/
@@ -78,7 +79,6 @@ class Mirror:
         """
         p1, p2, p3 = self.p1, self.p2, self.p3
         grid_plane_coors = []
-
         for m in range(grid_size):
             for n in range(grid_size):
                 x = (grid_size - n) / grid_size * p1[0] + (n - m) / grid_size * p2[0] + m / grid_size * p3[0]
@@ -98,6 +98,9 @@ class Mirror:
         l_mirror.atom_coors = mirror_coors
         l_mirror.atom_names = mirror_names
         return l_mirror
+
+    def get_center(self):
+        return (self.v1 + self.v2 ) / 2
 
     def scale(self, size=5):
         self.p1 *= size

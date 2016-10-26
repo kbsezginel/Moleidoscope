@@ -28,7 +28,7 @@ class Line:
         l_line.atom_names = line_names
         return l_line
 
-    def xyz_linker(length=30, size=10):
+    def xyz(length=30, size=10):
         x_line = Line([0, 0, 0], [length, 0, 0])
         y_line = Line([0, 0, 0], [0, length, 0])
         z_line = Line([0, 0, 0], [0, 0, length])
