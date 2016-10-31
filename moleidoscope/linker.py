@@ -161,9 +161,9 @@ class Linker:
         rotated_linker.atom_coors = rotated_coors
         return rotated_linker
 
-    def rotoreflect(self, rotation_info, mirror_plane):
+    def rotoreflect(self, rotation_info, mirror_plane, translate=None):
         rotated_linker = self.rotate(rotation_info)
-        reflected_linker = rotated_linker.reflect(mirror_plane)
+        reflected_linker = rotated_linker.reflect(mirror_plane, translate=translate)
         return reflected_linker
 
     def get_center(self):
@@ -213,6 +213,9 @@ class Linker:
         linker_path = self.export()
         return nglview.show_structure_file(linker_path)
 
+    def add_to_view(self, view):
+        view.add_component(nglview.FileStructure(self.export()))
+
     def export(self, file_name=None):
         if file_name is None:
             file_name = self.name
@@ -232,7 +235,6 @@ def write_pdb(pdb_path, names, coors):
             pdb_file.write(format % (atom_index, atom_name, x, y, z, atom_name.rjust(2)))
             atom_index += 1
         pdb_file.write('END\n')
-
 
     def join(self, *args):
         joined_linker = self.copy()

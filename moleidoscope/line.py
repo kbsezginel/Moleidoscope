@@ -9,18 +9,18 @@ class Line:
         self.name = str(p1) + '_' + str(p2)
         self.vec = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]]
 
-    def grid_line(self, size):
+    def grid(self, size):
         line_coors = []
         x, y, z = self.p1
         for s in range(size):
-            x += self.p2[0] / size
-            y += self.p2[1] / size
-            z += self.p2[2] / size
+            x += self.vec[0] / size
+            y += self.vec[1] / size
+            z += self.vec[2] / size
             line_coors.append([x, y, z])
         return line_coors
 
-    def to_linker(self, atom_type='Cl', size=10):
-        line_coors = self.grid_line(size)
+    def to_linker(self, atom_type='F', size=10):
+        line_coors = self.grid(size)
         line_names = [atom_type] * len(line_coors)
         l_line = Linker()
         l_line.name = self.name
