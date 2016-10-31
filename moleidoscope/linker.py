@@ -103,6 +103,7 @@ class Linker:
         linker_info['atom_names'] = library['atom_names'][linker_index]
         linker_info['atom_coors'] = library['atom_coors'][linker_index]
         linker_info['name'] = library['linker_names'][linker_index]
+        linker_info['connectivity'] = library['connectivity_index'][linker_index]
         return linker_info
 
     def reflect(self, mirror_plane, translate=None):
@@ -177,21 +178,24 @@ class Linker:
         return [xsum / num_of_atoms, ysum / num_of_atoms, zsum / num_of_atoms]
 
     def center(self, coor=[0, 0, 0], mirror=None):
-        if mirror is not None:
-            # Currently not working!!!
-            linker_center = np.array(self.get_center())
-            mirror_center = np.array(mirror.get_center())
-            mirror_vector = np.array([mirror.a, mirror.b, mirror.c])
-            translation = mirror_center - linker_center
-            self.translate(translation)
-
-        else:
+        if mirror is None:
             center_coor = self.get_center()
             center_vector = [i - j for i, j in zip(coor, center_coor)]
             new_coors = []
             for atom in self.atom_coors:
                 new_coors.append([i + j for i, j in zip(atom, center_vector)])
                 self.atom_coors = new_coors
+        else:
+            if type(mirror) is list:
+                mir, scale = mirror
+            else:
+                mir = mirror
+                scale = 0
+            linker_center = np.array(self.get_center())
+            mirror_center = np.array(mir.get_center())
+            mirror_vector = np.array([mir.a, mir.b, mir.c]) * scale
+            translation = mirror_center - linker_center + mirror_vector
+            self.translate(translation)
 
     def join(self, *args):
         joined_linker = self.copy()

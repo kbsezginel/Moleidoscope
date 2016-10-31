@@ -79,8 +79,8 @@ class Mirror:
         """
         p1, p2, p3 = self.p1, self.p2, self.p3
         grid_plane_coors = []
-        for m in range(grid_size):
-            for n in range(grid_size):
+        for m in range(grid_size + 1):
+            for n in range(grid_size + 1):
                 x = (grid_size - n) / grid_size * p1[0] + (n - m) / grid_size * p2[0] + m / grid_size * p3[0]
                 y = (grid_size - n) / grid_size * p1[1] + (n - m) / grid_size * p2[1] + m / grid_size * p3[1]
                 z = (grid_size - n) / grid_size * p1[2] + (n - m) / grid_size * p2[2] + m / grid_size * p3[2]
@@ -88,10 +88,13 @@ class Mirror:
 
         return grid_plane_coors
 
-    def to_linker(self, grid_size=10, atom_type='N'):
+    def to_linker(self, grid_size=10, show_edges=False, atom_type='N'):
         """ Convert mirror class to linker """
         mirror_coors = self.grid_plane(grid_size)
         mirror_names = [atom_type] * len(mirror_coors)
+        if show_edges:
+            mirror_coors += [self.p1, self.p2, self.p3]
+            mirror_names += ['S', 'S', 'S']
         from moleidoscope.linker import Linker
         l_mirror = Linker()
         l_mirror.name = self.name
@@ -100,7 +103,7 @@ class Mirror:
         return l_mirror
 
     def get_center(self):
-        return (self.v1 + self.v2 ) / 2
+        return self.p1 + (self.p3 - self.p1) / 2
 
     def scale(self, size=5):
         self.p1 *= size
