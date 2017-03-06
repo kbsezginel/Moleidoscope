@@ -52,11 +52,11 @@ class Linker:
 
     def read_linker(self, linker_index):
         linker_info = {'atom_names': [], 'atom_coors': [], 'num_of_atoms': 0, 'connectivity': []}
-        linker_info['num_of_atoms'] = library['number_of_atoms'][linker_index]
-        linker_info['atom_names'] = library['atom_names'][linker_index]
-        linker_info['atom_coors'] = library['atom_coors'][linker_index]
-        linker_info['name'] = library['linker_names'][linker_index]
-        linker_info['connectivity'] = library['connectivity_index'][linker_index]
+        linker_info['num_of_atoms'] = library['number_of_atoms'][linker_index + 1]
+        linker_info['atom_names'] = library['atom_names'][linker_index + 1]
+        linker_info['atom_coors'] = library['atom_coors'][linker_index + 1]
+        linker_info['name'] = library['linker_names'][linker_index + 1]
+        linker_info['connectivity'] = library['connectivity_index'][linker_index + 1]
         return linker_info
 
     def reflect(self, mirror_plane, translate=None):

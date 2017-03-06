@@ -4,7 +4,7 @@
 import os
 
 
-def read_library(library_path):
+def read_library(library_path, rename='N'):
     """
     Read HostDesigner linker library.
     """
@@ -16,7 +16,7 @@ def read_library(library_path):
     number_of_atoms = []
     linker_index = []
     linker_names = []
-    num_of_linkers = 0
+    num_of_linkers = 1
     for line_index, line in enumerate(lib_lines):
         if 'LINK' in line:
             linker_names.append(lib_lines[line_index].split()[-1])
@@ -37,7 +37,7 @@ def read_library(library_path):
         for i in range(int(num)):
             atom_name = lib_lines[coor_index + i].split()[1]
             if atom_name == 'X':
-                atom_name = 'O'
+                atom_name = rename
             x = float(lib_lines[coor_index + i].split()[2])
             y = float(lib_lines[coor_index + i].split()[3])
             z = float(lib_lines[coor_index + i].split()[4])
