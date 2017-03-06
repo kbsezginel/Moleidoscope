@@ -8,60 +8,13 @@ import numpy as np
 from moleidoscope.geo.coor import Coor
 from moleidoscope.geo.quaternion import Quaternion
 from moleidoscope.mirror import Mirror
+from moleidoscope.hd import read_library
+from moleidoscope.visualize import write_pdb
 
 
 main_dir = os.getcwd()
 library_path = os.path.join(main_dir, 'LIBRARY')
-linker_dir = os.path.join(main_dir, 'linkers')
-
-
-def read_library(library_path):
-    with open(library_path, 'r') as library_file:
-        lib_lines = library_file.readlines()
-
-    connectivity_index = []
-    coordinate_index = []
-    number_of_atoms = []
-    linker_index = []
-    linker_names = []
-    num_of_linkers = 0
-    for line_index, line in enumerate(lib_lines):
-        if 'LINK' in line:
-            linker_names.append(lib_lines[line_index].split()[-1])
-            linker_index.append(num_of_linkers)
-            connectivity_index.append(line_index + 1)
-            coordinate_index.append(line_index + 6)
-            num_atom = float(lib_lines[line_index + 5].split()[0])
-            number_of_atoms.append(num_atom)
-            num_of_linkers += 1
-
-    atom_names = []
-    atom_coors = []
-    for num_index, num in enumerate(number_of_atoms):
-        coor_index = coordinate_index[num_index]
-        connect_index = connectivity_index[num_index]
-        atom_names.append([])
-        atom_coors.append([])
-        for i in range(int(num)):
-            atom_name = lib_lines[coor_index + i].split()[1]
-            if atom_name == 'X':
-                atom_name = 'O'
-            x = float(lib_lines[coor_index + i].split()[2])
-            y = float(lib_lines[coor_index + i].split()[3])
-            z = float(lib_lines[coor_index + i].split()[4])
-            atom_names[num_index].append(atom_name)
-            atom_coors[num_index].append([x, y, z])
-
-    library = {'atom_names': atom_names,
-               'atom_coors': atom_coors,
-               'number_of_atoms': number_of_atoms,
-               'linker_index': linker_index,
-               'coordinate_index': coordinate_index,
-               'connectivity_index': connectivity_index,
-               'linker_names': linker_names}
-
-    return library
-
+linker_export_dir = os.path.join(main_dir, 'doc', 'tmp')
 library = read_library(library_path)
 
 
@@ -213,46 +166,11 @@ class Linker:
         linker_path = self.export()
         return nglview.show_structure_file(linker_path)
 
-    def add_to_view(self, view):
-        view.add_component(nglview.FileStructure(self.export()))
-
-    def export(self, file_name=None):
+    def export(self, file_name=None, export_dir=None):
         if file_name is None:
             file_name = self.name
-        linker_path = os.path.join(linker_dir, file_name + '.pdb')
+        if export_dir is None:
+            export_dir = linker_export_dir
+        linker_path = os.path.join(export_dir, file_name + '.pdb')
         write_pdb(linker_path, self.atom_names, self.atom_coors)
         return linker_path
-
-
-def write_pdb(pdb_path, names, coors):
-    structure_name = os.path.splitext(os.path.basename(pdb_path))[0]
-    with open(pdb_path, 'w') as pdb_file:
-        pdb_file.write('HEADER    ' + structure_name + '\n')
-        format = 'HETATM%5d%3s  MOL     1     %8.3f%8.3f%8.3f  1.00  0.00          %2s\n'
-        atom_index = 1
-        for atom_name, atom_coor in zip(names, coors):
-            x, y, z = atom_coor
-            pdb_file.write(format % (atom_index, atom_name, x, y, z, atom_name.rjust(2)))
-            atom_index += 1
-        pdb_file.write('END\n')
-
-    def join(self, *args):
-        joined_linker = self.copy()
-        for other_linker in args:
-            joined_linker.atom_coors += other_linker.atom_coors
-            joined_linker.atom_names += other_linker.atom_names
-            joined_linker.num_of_atoms += len(other_linker.atom_names)
-            if joined_linker.name == other_linker.name:
-                joined_linker.name += 'JOINED'
-            else:
-                joined_linker.name += '_' + other_linker.name
-        return joined_linker
-
-
-def view_linkers(*args):
-    l = Linker()
-    for linker in args:
-        l = l.join(linker)
-    l.name = 'view'
-    linker_path = l.export()
-    return nglview.show_structure_file(linker_path)
