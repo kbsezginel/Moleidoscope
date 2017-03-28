@@ -1,4 +1,8 @@
+# Quaternion operations for 3D rotation
+# Date: 2016
+# Author: Kutay B. Sezginel
 import math
+import numpy as np
 
 
 class Quaternion(object):
@@ -22,6 +26,10 @@ class Quaternion(object):
         Returns x, y, z values of the quaternion in list format.
         """
         return [self.x, self.y, self.z]
+
+    def np(self):
+        """ Returns numpy array if x, y, z values. """
+        return np.array([self.x, self.y, self.z])
 
     def __mul__(self, quat2):
         """
@@ -98,10 +106,3 @@ class Quaternion(object):
         Quat.z = Quat.z + axis_point2[2]
 
         return Quat
-
-    def coor(self):
-        """
-        Converts Quaternion object to Coor object.
-        """
-        from moleidoscope.geometry.coor import Coor as Coor
-        return Coor(self.xyz())
