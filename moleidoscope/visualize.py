@@ -7,18 +7,17 @@ import tempfile
 import nglview
 
 
-def show(*args, camera='perspective', move='auto', div=5, distance=(-10, -10), axis=0, replace=None, rename='F'):
+def show(*args, camera='perspective', move='auto', div=5, distance=(-10, -10), axis=0, caps=True):
     """
     Show given structures using nglview
         - camera: 'perspective' / 'orthographic'
         - move: separate multiple structures equally distant from each other
         - distance: separation distance
         - axis: separation direction
-        - replace: replace names of a given list of atoms (either list of indices or list of atom types)
-        - rename: rename the selected atoms to given atom name (use 'F' or 'S' for different colors)
+        - caps: capitalize atom names so they show true colors in nglview
     """
     if move is 'auto':
-        translation_vectors = arrange_structure_positions(len(args), div=div, distance=distance, rename='F')
+        translation_vectors = arrange_structure_positions(len(args), div=div, distance=distance)
     elif move is 'single':
         translation_vectors = axis_translation(len(args), distance=distance[0], axis=axis)
     else:
@@ -30,8 +29,9 @@ def show(*args, camera='perspective', move='auto', div=5, distance=(-10, -10), a
         atom_names += molecule.atom_names
         atom_coors += translate(molecule.atom_coors, vector=vec)
 
-    if replace is not None:
-        atom_names = change_atom_names(atom_names, replace=replace, rename=rename)
+    # nglview require atom names in all caps to color them properly
+    if caps:
+        atom_names = [name.upper() for name in atom_names]
 
     temp_pdb_file = tempfile.NamedTemporaryFile(mode='w+', suffix='.pdb')
     write_pdb(temp_pdb_file, atom_names, atom_coors)
@@ -42,7 +42,7 @@ def show(*args, camera='perspective', move='auto', div=5, distance=(-10, -10), a
     return view
 
 
-def arrange_structure_positions(n_structures, div=5, distance=(10, 10), rename='F'):
+def arrange_structure_positions(n_structures, div=5, distance=(10, 10)):
     """
     Arrange structure positions according to number of structures given.
     """
@@ -95,20 +95,3 @@ def write_pdb(pdb_file, names, coors, header='Host'):
         pdb_file.write(format % (atom_index, atom_name, x, y, z, atom_name.rjust(2)))
     pdb_file.write('END\n')
     pdb_file.flush()
-
-
-def change_atom_names(atom_names, replace=None, rename='F'):
-    """ Change given list of atom names by indices or names """
-    new_names = []
-    replace_indices = []
-    replace_names = []
-    if all(type(n) is int for n in replace):
-        replace_indices = replace
-    elif all(type(n) is str for n in replace):
-        replace_names = replace
-    for i, name in enumerate(atom_names, start=1):
-        if i in replace_indices or name in replace_names:
-            new_names.append(rename)
-        else:
-            new_names.append(name)
-    return new_names
