@@ -2,6 +2,7 @@
 # Author: Kutay B Sezginel
 # Date: February 2017
 import os
+import numpy as np
 
 
 def read_library(library_path, rename='N'):
@@ -12,6 +13,7 @@ def read_library(library_path, rename='N'):
         lib_lines = library_file.readlines()
 
     connectivity_index = []
+    connectivity = []
     coordinate_index = []
     number_of_atoms = []
     linker_index = []
@@ -43,6 +45,8 @@ def read_library(library_path, rename='N'):
             z = float(lib_lines[coor_index + i].split()[4])
             atom_names[num_index].append(atom_name)
             atom_coors[num_index].append([x, y, z])
+        # Add connectivity information
+        connectivity.append(read_connnection(lib_lines, connect_index, atom_coors[num_index]))
 
     library = {'atom_names': atom_names,
                'atom_coors': atom_coors,
@@ -50,6 +54,28 @@ def read_library(library_path, rename='N'):
                'linker_index': linker_index,
                'coordinate_index': coordinate_index,
                'connectivity_index': connectivity_index,
+               'connectivity': connectivity,
                'linker_names': linker_names}
 
     return library
+
+
+def read_connnection(library_lines, connectivity_index, atom_coors):
+    """ Read connectivity information for given linker from library """
+    connectivity = dict(dummy_dist=0, carbon_dist=0, angle1=0, angle2=0, dihedral=0, atoms=[], coors=[])
+    atom1_index = int(library_lines[connectivity_index].split()[0])
+    atom2_index = int(library_lines[connectivity_index + 1].split()[0])
+    connectivity['atoms'] = [atom1_index, atom2_index]
+    connectivity['carbon_dist'] = float(library_lines[connectivity_index + 3].split()[0])
+    connectivity['angle1'] = float(library_lines[connectivity_index + 3].split()[1])
+    connectivity['angle2'] = float(library_lines[connectivity_index + 3].split()[2])
+    connectivity['dihedral'] = float(library_lines[connectivity_index + 3].split()[3])
+    try:
+        connect1_coor = np.array(atom_coors[atom1_index - 1])
+        connect2_coor = np.array(atom_coors[atom2_index - 1])
+        connectivity['dummy_dist'] = np.linalg.norm(connect1_coor - connect2_coor)
+        connectivity['coors'] = [connect1_coor, connect2_coor]
+    except:
+        connectivity['dummy_dist'] = None
+        connectivity['coors'] = None
+    return connectivity
