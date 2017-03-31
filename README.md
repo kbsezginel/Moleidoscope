@@ -18,7 +18,17 @@ A key challenge in chemistry is to design molecules with given shapes and sizes 
 
 Using _moleidoscope_ supramolecular cages with different number of components can be discovered. As these cages tend to have common polyhedral shapes we can use this information to find linkers that can construct such shapes. 
 
-### Development
+### Setup
+
+Moleidoscope requires Python ≥ 3.5.1 and [HostDesigner](https://github.com/kbsezginel/HostDesigner).
+
+You can install Moleidoscope by cloning the repository and running setup.py as follows:
+
+`git clone https://github.com/kbsezginel/Moleidoscope.git`
+
+`cd Moleidoscope`
+
+`python setup.py install`
 
 The library is currently under development. As codebase gets bigger more documentation and examples will be provided.
 
