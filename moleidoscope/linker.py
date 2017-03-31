@@ -5,32 +5,29 @@ import os
 import math
 import nglview
 import numpy as np
-from moleidoscope.geo.coor import Coor
 from moleidoscope.geo.quaternion import Quaternion
 from moleidoscope.mirror import Mirror
 from moleidoscope.hd import read_library
-from moleidoscope.visualize import write_pdb
+from moleidoscope.output import write_pdb
 
 
-main_dir = os.getcwd()
-library_path = os.path.join(main_dir, 'LIBRARY')
-linker_export_dir = os.path.join(main_dir, 'doc', 'tmp')
-library = read_library(library_path)
+hd_dir = os.environ['HD_DIR']
+library_path = os.path.join(hd_dir, 'LIBRARY')
+if os.path.exists(library_path):
+    hd_lib = read_library(library_path)
+else:
+    print('HostDesigner directory not found in environment variables!')
 
 
 class Linker:
     """
     Linker class.
     """
-    def __init__(self, linker_index=None):
+    def __init__(self, linker_index=None, host=None):
         if linker_index is not None:
-            linker_info = self.read_linker(linker_index)
-            self.index = linker_index
-            self.name = linker_info['name']
-            self.atom_names = linker_info['atom_names']
-            self.atom_coors = linker_info['atom_coors']
-            self.num_of_atoms = linker_info['num_of_atoms']
-            self.connectivity = linker_info['connectivity']
+            self.read_linker(linker_index)
+        elif host is not None:
+            self.read_host(host)
         else:
             self.name = ''
             self.atom_names = []
@@ -40,24 +37,28 @@ class Linker:
         return "<Linker object %s with:%s atoms>" % (self.name, len(self.atom_coors))
 
     def copy(self):
-        copy_linker = Linker()
-        copy_linker.atom_coors = []
-        copy_linker.atom_names = []
-        for name, coor in zip(self.atom_names, self.atom_coors):
-            copy_linker.atom_names.append(name)
-            copy_linker.atom_coors.append(coor)
-        copy_linker.num_of_atoms = len(copy_linker.atom_names)
-        copy_linker.name = self.name
-        return copy_linker
+        """ Copy linker object """
+        linker_copy = Linker()
+        variables = [i for i in vars(self)]
+        for var in variables:
+            setattr(linker_copy, var, getattr(self, var))
+        return linker_copy
 
-    def read_linker(self, linker_index):
-        linker_info = {'atom_names': [], 'atom_coors': [], 'num_of_atoms': 0, 'connectivity': []}
-        linker_info['num_of_atoms'] = library['number_of_atoms'][linker_index + 1]
-        linker_info['atom_names'] = library['atom_names'][linker_index + 1]
-        linker_info['atom_coors'] = library['atom_coors'][linker_index + 1]
-        linker_info['name'] = library['linker_names'][linker_index + 1]
-        linker_info['connectivity'] = library['connectivity_index'][linker_index + 1]
-        return linker_info
+    def read_linker(self, linker_index, library=hd_lib):
+        """ Read linker information into object from the library """
+        self.index = linker_index
+        self.name = library['linker_names'][linker_index - 1]
+        self.atom_names = library['atom_names'][linker_index - 1]
+        self.atom_coors = library['atom_coors'][linker_index - 1]
+        self.num_of_atoms = library['number_of_atoms'][linker_index - 1]
+        self.connectivity = library['connectivity'][linker_index - 1]
+
+    def read_host(self, host):
+        """ Read host object into linker object """
+        self.name = host.name
+        self.atom_coors = host.atom_coors
+        self.atom_names = host.atom_names
+        self.host = host
 
     def reflect(self, mirror_plane, translate=None):
         """ Reflect the linker off a plane.
@@ -93,36 +94,36 @@ class Linker:
 
         return mirror_linker
 
-    def translate(self, translation_info):
+    def translate(self, translation_vector):
+        """ Translate linker using given vector """
+        translation = np.array(translation_vector)
         translation_coordinates = []
         for coor in self.atom_coors:
-            translation_coor = []
-            for axis_index, translation_amount in enumerate(translation_info):
-                translation_coor.append(coor[axis_index] + translation_amount)
-            translation_coordinates.append(translation_coor)
+            translation_coordinates.append(np.array(coor) + translation)
         self.atom_coors = translation_coordinates
 
-    def rotate(self, rotation_info):
+    def rotate(self, angle, axis):
+        """ Rotate linker with given angle and axis """
         Q = Quaternion([0, 1, 1, 1])
         rotated_coors = []
         for coor in self.atom_coors:
-            x, y, z = Q.rotation(coor, rotation_info[2], rotation_info[1], rotation_info[0]).xyz()
+            x, y, z = Q.rotation(coor, [0, 0, 0], axis, angle).xyz()
             rotated_coors.append([x, y, z])
 
         rotated_linker = self.copy()
-        rotated_linker.name = self.name + '_R' + str(round(math.degrees(rotation_info[0])))
+        rotated_linker.name = '%s_R' % self.name
         rotated_linker.atom_coors = rotated_coors
         return rotated_linker
 
-    def rotoreflect(self, rotation_info, mirror_plane, translate=None):
-        rotated_linker = self.rotate(rotation_info)
+    def rotoreflect(self, angle, axis, mirror_plane, translate=None):
+        """ Improper rotation with given angle, axis and reflection plane """
+        rotated_linker = self.rotate(angle, axis)
         reflected_linker = rotated_linker.reflect(mirror_plane, translate=translate)
         return reflected_linker
 
     def get_center(self):
-        xsum = 0
-        ysum = 0
-        zsum = 0
+        """ Get center coordinates of the linker """
+        xsum, ysum, zsum = 0, 0, 0
         for coor in self.atom_coors:
             xsum += coor[0]
             ysum += coor[1]
@@ -131,6 +132,7 @@ class Linker:
         return [xsum / num_of_atoms, ysum / num_of_atoms, zsum / num_of_atoms]
 
     def center(self, coor=[0, 0, 0], mirror=None):
+        """ Move linker to given coordinates using it's center """
         if mirror is None:
             center_coor = self.get_center()
             center_vector = [i - j for i, j in zip(coor, center_coor)]
@@ -151,6 +153,7 @@ class Linker:
             self.translate(translation)
 
     def join(self, *args):
+        """ Join multiple linker objects into single linker object """
         joined_linker = self.copy()
         for other_linker in args:
             joined_linker.atom_coors += other_linker.atom_coors
@@ -162,15 +165,13 @@ class Linker:
                 joined_linker.name += '_' + other_linker.name
         return joined_linker
 
-    def view(self):
-        linker_path = self.export()
-        return nglview.show_structure_file(linker_path)
-
-    def export(self, file_name=None, export_dir=None):
+    def save(self, file_name=None, save_dir=None):
+        """ Save linker object """
         if file_name is None:
             file_name = self.name
-        if export_dir is None:
-            export_dir = linker_export_dir
-        linker_path = os.path.join(export_dir, file_name + '.pdb')
-        write_pdb(linker_path, self.atom_names, self.atom_coors)
+        if save_dir is None:
+            save_dir = os.getcwd()
+        linker_path = os.path.join(save_dir, file_name + '.pdb')
+        with open(linker_path, 'w') as pdb:
+            write_pdb(pdb, self.atom_names, self.atom_coors, header=self.name)
         return linker_path
