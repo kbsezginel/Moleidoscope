@@ -1,14 +1,13 @@
 # Linker class for molecular kaleidoscope
 # Date: August 2016
-# Authors: Kutay B. Sezginel and Yan Gui
+# Authors: Kutay B. Sezginel
 import os
 import math
-import nglview
 import numpy as np
 from moleidoscope.geo.quaternion import Quaternion
 from moleidoscope.mirror import Mirror
 from moleidoscope.hd import read_library
-from moleidoscope.output import write_pdb
+from moleidoscope.output import save
 
 
 hd_dir = os.environ['HD_DIR']
@@ -165,13 +164,11 @@ class Linker:
                 joined_linker.name += '_' + other_linker.name
         return joined_linker
 
-    def save(self, file_name=None, save_dir=None):
-        """ Save linker object """
+    def save(self, file_format='pdb', save_dir=None, file_name=None, setup=None):
+        """ Save linker object (file_format = 'pdb' / 'yaml' / 'xyz' / 'orca') """
         if file_name is None:
             file_name = self.name
         if save_dir is None:
             save_dir = os.getcwd()
-        linker_path = os.path.join(save_dir, file_name + '.pdb')
-        with open(linker_path, 'w') as pdb:
-            write_pdb(pdb, self.atom_names, self.atom_coors, header=self.name)
-        return linker_path
+        fp = save(self, file_format=file_format, file_name=file_name, save_dir=save_dir, setup=setup)
+        print('Saved as %s' % fp)
