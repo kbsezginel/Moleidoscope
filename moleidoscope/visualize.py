@@ -7,7 +7,7 @@ import tempfile
 import nglview
 
 
-def show(*args, camera='perspective', move='auto', div=5, distance=(-10, -10), axis=0, caps=True):
+def show(*args, camera='perspective', move='auto', div=5, distance=(-10, -10), axis=0, caps=True, save=None, group=True):
     """
     Show given structures using nglview
         - camera: 'perspective' / 'orthographic'
@@ -25,20 +25,30 @@ def show(*args, camera='perspective', move='auto', div=5, distance=(-10, -10), a
 
     atom_names = []
     atom_coors = []
-    for molecule, vec in zip(args, translation_vectors):
+    group_numbers = []
+    for mol_index, (molecule, vec) in enumerate(zip(args, translation_vectors), start=1):
         atom_names += molecule.atom_names
         atom_coors += translate(molecule.atom_coors, vector=vec)
+        group_numbers += [mol_index] * len(molecule.atom_names)
 
     # nglview require atom names in all caps to color them properly
     if caps:
         atom_names = [name.upper() for name in atom_names]
 
-    temp_pdb_file = tempfile.NamedTemporaryFile(mode='w+', suffix='.pdb')
-    write_pdb(temp_pdb_file, atom_names, atom_coors)
+    if not group:
+        group_numbers = [1] * len(atom_names)
 
-    view = nglview.show_structure_file(temp_pdb_file.name)
+    if save is None:
+        temp_pdb_file = tempfile.NamedTemporaryFile(mode='w+', suffix='.pdb')
+        write_pdb(temp_pdb_file, atom_names, atom_coors, group=group_numbers)
+        view = nglview.show_structure_file(temp_pdb_file.name)
+        temp_pdb_file.close()
+    else:
+        with open(save, 'w') as save_file:
+            write_pdb(save_file, atom_names, atom_coors, group=group_numbers)
+        view = nglview.show_structure_file(save)
+
     view.camera = camera
-    temp_pdb_file.close()
     return view
 
 
@@ -86,12 +96,15 @@ def axis_translation(n_structures, distance=-10, axis=0):
     return translation_vectors
 
 
-def write_pdb(pdb_file, names, coors, header='Host'):
+def write_pdb(pdb_file, names, coors, group=None, header='Host'):
     """ Write given atomic coordinates to file object in pdb format """
     pdb_file.write('HEADER    ' + header + '\n')
-    format = 'HETATM%5d%3s  MOL     1     %8.3f%8.3f%8.3f  1.00  0.00          %2s\n'
+    format = 'HETATM%5d%3s  M%4i %3i     %8.3f%8.3f%8.3f  1.00  0.00          %2s\n'
+    if group is None:
+        group = [1] * len(names)
     for atom_index, (atom_name, atom_coor) in enumerate(zip(names, coors), start=1):
         x, y, z = atom_coor
-        pdb_file.write(format % (atom_index, atom_name, x, y, z, atom_name.rjust(2)))
+        residue_no = group[atom_index - 1]
+        pdb_file.write(format % (atom_index, atom_name, residue_no, residue_no, x, y, z, atom_name.rjust(2)))
     pdb_file.write('END\n')
     pdb_file.flush()

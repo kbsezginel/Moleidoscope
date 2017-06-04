@@ -1,14 +1,16 @@
 # Linker class for molecular kaleidoscope
 # Date: August 2016
-# Authors: Kutay B. Sezginel and Yan Gui
+# Authors: Kutay B. Sezginel
 import os
 import math
-import nglview
+import copy
 import numpy as np
 from moleidoscope.geo.quaternion import Quaternion
 from moleidoscope.mirror import Mirror
 from moleidoscope.hd import read_library
-from moleidoscope.output import write_pdb
+from moleidoscope.output import save
+from moleidoscope.input import read_xyz
+from moleidoscope.geo.vector import align
 
 
 hd_dir = os.environ['HD_DIR']
@@ -23,11 +25,13 @@ class Linker:
     """
     Linker class.
     """
-    def __init__(self, linker_index=None, host=None):
+    def __init__(self, linker_index=None, host=None, read=None):
         if linker_index is not None:
             self.read_linker(linker_index)
         elif host is not None:
             self.read_host(host)
+        elif read is not None:
+            self.read_file(read)
         else:
             self.name = ''
             self.atom_names = []
@@ -37,12 +41,8 @@ class Linker:
         return "<Linker object %s with:%s atoms>" % (self.name, len(self.atom_coors))
 
     def copy(self):
-        """ Copy linker object """
-        linker_copy = Linker()
-        variables = [i for i in vars(self)]
-        for var in variables:
-            setattr(linker_copy, var, getattr(self, var))
-        return linker_copy
+        """ Returns a deepcopy of linker object """
+        return copy.deepcopy(self)
 
     def read_linker(self, linker_index, library=hd_lib):
         """ Read linker information into object from the library """
@@ -59,6 +59,14 @@ class Linker:
         self.atom_coors = host.atom_coors
         self.atom_names = host.atom_names
         self.host = host
+
+    def read_file(self, file_path):
+        """ Read structure from file (currently only in xyz format) """
+        mol = read_xyz(file_path)
+        self.name = mol['name']
+        self.num_of_atoms = mol['n_atoms']
+        self.atom_coors = mol['atom_coors']
+        self.atom_names = mol['atom_names']
 
     def reflect(self, mirror_plane, translate=None):
         """ Reflect the linker off a plane.
@@ -152,26 +160,43 @@ class Linker:
             translation = mirror_center - linker_center + mirror_vector
             self.translate(translation)
 
+    def align(self, vector, translate=[0, 0, 0]):
+        """ Align linker to given vector and translate """
+        rotation_axis, angle = align(self.vector, vector)   # Get rotation axis and angle to align linker
+        dest = np.array(translate)
+        aligned_linker = self.rotate(angle, rotation_axis)
+        aligned_linker.center(dest)
+        return aligned_linker
+
+    def get_vector(self, atom1, atom2):
+        """ Return vector between two given atoms """
+        c1 = np.array(self.atom_coors[atom1])
+        c2 = np.array(self.atom_coors[atom2])
+        return (c2 - c1)
+
+    def remove(self, atom_indices):
+        """ Remove atoms with given indices """
+        for i in atom_indices:
+            del self.atom_names[i]
+            del self.atom_coors[i]
+
     def join(self, *args):
         """ Join multiple linker objects into single linker object """
         joined_linker = self.copy()
         for other_linker in args:
             joined_linker.atom_coors += other_linker.atom_coors
             joined_linker.atom_names += other_linker.atom_names
-            joined_linker.num_of_atoms += len(other_linker.atom_names)
             if joined_linker.name == other_linker.name:
                 joined_linker.name += 'JOINED'
             else:
                 joined_linker.name += '_' + other_linker.name
         return joined_linker
 
-    def save(self, file_name=None, save_dir=None):
-        """ Save linker object """
+    def save(self, file_format='pdb', save_dir=None, file_name=None, setup=None):
+        """ Save linker object (file_format = 'pdb' / 'yaml' / 'xyz' / 'orca') """
         if file_name is None:
             file_name = self.name
         if save_dir is None:
             save_dir = os.getcwd()
-        linker_path = os.path.join(save_dir, file_name + '.pdb')
-        with open(linker_path, 'w') as pdb:
-            write_pdb(pdb, self.atom_names, self.atom_coors, header=self.name)
-        return linker_path
+        fp = save(self, file_format=file_format, file_name=file_name, save_dir=save_dir, setup=setup)
+        print('Saved as %s' % fp)
