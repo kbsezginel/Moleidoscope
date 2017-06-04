@@ -1,5 +1,7 @@
 numpy
 pyyaml
 tabulate
+xlrd
 nglview
+MDAnalysis
 HostDesigner
