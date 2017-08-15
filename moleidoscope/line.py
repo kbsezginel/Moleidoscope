@@ -1,3 +1,8 @@
+# Author: Kutay B. Sezginel
+# Date: August 2016
+"""
+Molecular line object
+"""
 from moleidoscope.linker import Linker
 
 

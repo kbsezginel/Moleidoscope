@@ -1,6 +1,8 @@
-# Quaternion operations for 3D rotation
 # Date: 2016
 # Author: Kutay B. Sezginel
+"""
+Quaternion operations for 3D rotation
+"""
 import math
 import numpy as np
 

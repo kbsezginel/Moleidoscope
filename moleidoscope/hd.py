@@ -1,6 +1,8 @@
-# Moleidoscope hostdesigner methods
 # Author: Kutay B Sezginel
 # Date: February 2017
+"""
+HostDesigner integration (read library)
+"""
 import os
 import numpy as np
 

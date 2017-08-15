@@ -1,6 +1,8 @@
-# File input methods (formats: xyz)
 # Date: May 2017
 # Authors: Kutay B. Sezginel
+"""
+File input methods (formats: xyz)
+"""
 import os
 import numpy as np
 

@@ -1,6 +1,8 @@
-# File output methods (formats: pdb / xyz / yaml / orca)
 # Date: March 2017
 # Authors: Kutay B. Sezginel
+"""
+File output methods (formats: pdb / xyz / yaml / orca)
+"""
 import os
 import yaml
 

@@ -1,6 +1,8 @@
-# Polyhedra class
 # Date: August 2016
 # Author: Kutay B. Sezginel
+"""
+Polyhedra object to create polyhedral molecules
+"""
 import os
 import copy
 import math

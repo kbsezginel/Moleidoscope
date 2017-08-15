@@ -1,6 +1,8 @@
-# Linker class for molecular kaleidoscope
 # Date: August 2016
 # Authors: Kutay B. Sezginel
+"""
+Molecular linker object
+"""
 import os
 import math
 import copy

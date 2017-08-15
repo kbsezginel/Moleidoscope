@@ -1,6 +1,8 @@
-# Moleidoscope visualization methods
 # Author: Kutay B Sezginel
 # Date: February 2017
+"""
+Visualization methods using nglview backend
+"""
 import os
 import math
 import tempfile

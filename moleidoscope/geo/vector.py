@@ -1,6 +1,8 @@
-# 3D vector operations
 # Date: March 2017
 # Author: Kutay B. Sezginel
+"""
+3D vector operations
+"""
 import math
 import numpy as np
 

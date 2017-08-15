@@ -1,3 +1,8 @@
+# Date: August 2016
+# Authors: Kutay B. Sezginel
+"""
+Mirror object to create prisms and perform reflections
+"""
 import numpy as np
 from moleidoscope.geo.quaternion import Quaternion
 
