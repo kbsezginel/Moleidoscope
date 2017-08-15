@@ -1,0 +1,22 @@
+language: python
+
+# Run jobs on container-based infrastructure, can be overridden per job
+sudo: false
+
+matrix:
+  - python: 3.5
+
+before_install:
+  - uname -a
+  - free -m
+  - df -h
+  - ulimit -a
+
+before_script:
+  - python -V
+
+script:
+  - python setup.py install
+
+notifications:
+  email: false
