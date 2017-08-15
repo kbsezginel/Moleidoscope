@@ -1,13 +1,18 @@
-# Moleidoscope Force Field Functions
 # Date: March 2017
 # Author: Kutay B. Sezginel
+"""
+Force Field parameters and calculations
+"""
 import os
 import math
 import xlrd
 import numpy as np
 
 
-def read_ff_parameters(excel_file_path, ff_selection='uff'):
+ff_par = os.path.abspath(os.path.join(os.path.dirname(__file__), 'library/FF_Parameters.xlsx'))
+
+
+def read_ff_parameters(excel_file_path=ff_par, ff_selection='uff'):
     """
     Read force field parameters from an excel file according to force field selection
     """
