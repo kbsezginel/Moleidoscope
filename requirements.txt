@@ -3,5 +3,5 @@ pyyaml
 tabulate
 xlrd
 nglview
-MDAnalysis
+mdtraj
 HostDesigner
