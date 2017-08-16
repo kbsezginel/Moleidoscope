@@ -1,4 +1,6 @@
 numpy
+cython
+scipy
 pyyaml
 tabulate
 xlrd
