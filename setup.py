@@ -1,8 +1,9 @@
+"""
+Moleidoscope setup file.
+"""
 import os
 from setuptools import setup, find_packages
 
-with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
 
 setup(
     name="moleidoscope",
@@ -10,7 +11,7 @@ setup(
     description="Molecular structure generator",
     author="Kutay B. Sezginel",
     author_email="kbs37@pitt.edu",
-    install_requires=requirements,
+    install_requires=['numpy', 'scipy', 'pyyaml', 'tabulate', 'xlrd', 'nglview'],
     dependency_links=['http://github.com/kbsezginel/HostDesigner/tarball/master#egg=package-1.0'],
     packages=find_packages(),
     include_package_data=True
