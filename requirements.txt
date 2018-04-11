@@ -1,9 +1,6 @@
 numpy
-cython
 scipy
 pyyaml
 tabulate
 xlrd
 nglview
-mdtraj
-HostDesigner
