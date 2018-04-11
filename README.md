@@ -5,7 +5,7 @@ About
 -----
 
 <p align="center">
-<img src="img/molecular-decomposition-animation.gif">
+<img src="docs/img/molecular-decomposition-animation.gif">
 </p>
 
 A key challenge in chemistry is to design molecules with given shapes and sizes comprising many components. One approach to designing structures with such a large number of components is to leverage the typically highly symmetrical nature of supramolecular structures (Figure 1). “Moleidoscope” interactively applies point group symmetry operations to generate hypothetical supramolecular structures in silico. Starting with a simple organic compound, the molecule is replicated using mirror operations, and by selecting multiple mirrors (3D planes), prisms can be formed to have multiple copies of the molecule oriented symmetrically. Moreover, as is the case with kaleidoscope, by rotating these mirrors even more copies can be obtained with many different symmetries.
@@ -13,7 +13,7 @@ A key challenge in chemistry is to design molecules with given shapes and sizes 
 ---
 
 <p align="center">
-<img src="img/molecular-build-procedure.PNG">
+<img src="docs/img/molecular-build-procedure.PNG">
 </p>
 
 
@@ -25,7 +25,7 @@ A key challenge in chemistry is to design molecules with given shapes and sizes 
 
 ### Supramolecular Cages
 
-<p align="center"> <img src="img/supramolecular-cages.PNG"> </p>
+<p align="center"> <img src="docs/img/supramolecular-cages.PNG"> </p>
 
 Using _moleidoscope_ supramolecular cages with different number of components can be discovered. As these cages tend to have common polyhedral shapes we can use this information to find linkers that can construct such shapes.
 
